@@ -22,4 +22,14 @@ class TeacherService {
   Future<void> addTeacher(Teacher teacher) async {
     await _teachers.add(teacher.toMap());
   }
+
+  Future<void> updateTeacherSubjects(
+      String teacherId,
+      List<String> subjectIds,
+      ) async {
+    await _teachers.doc(teacherId).update({
+      'subjectIds': subjectIds,
+    });
+  }
+
 }
