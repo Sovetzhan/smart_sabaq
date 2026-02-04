@@ -4,6 +4,7 @@ import '../../models/teacher.dart';
 import '../../services/teacher_service.dart';
 import '../../services/subject_service.dart';
 import '../subjects/subject_select_screen.dart';
+import '../../core/current_user.dart';
 
 class AddTeacherScreen extends StatefulWidget {
   @override
@@ -43,7 +44,8 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       subjectIds: _selectedSubjectIds,
     );
 
-    await _teacherService.addTeacher(teacher);
+    await _teacherService.addTeacher(CurrentUser.user!, teacher);
+
     Navigator.pop(context);
   }
 

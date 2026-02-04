@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../models/lesson_plan_model.dart';
+import '../../core/current_user.dart';
+import '../../core/user_context.dart';
+import '../../core/user_role.dart';
+
 import '../../models/teacher.dart';
-import '../../services/lesson_plan_service.dart';
 import '../../services/teacher_service.dart';
 import 'add_teacher_screen.dart';
 
@@ -14,21 +15,39 @@ class TeachersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final UserContext user = CurrentUser.user!;
+
+    // ❌ Учитель не имеет права видеть штат
+    if (user.role != UserRole.admin) {
+      return const Scaffold(
+        body: Center(
+          child: Text(
+            'Доступ запрещён',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Штат')),
+      appBar: AppBar(
+        title: const Text('Штат'),
+      ),
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => AddTeacherScreen()),
+            MaterialPageRoute(
+              builder: (_) => AddTeacherScreen(),
+            ),
           );
         },
         child: const Icon(Icons.add),
       ),
 
       body: StreamBuilder<List<Teacher>>(
-        stream: _service.getTeachers(),
+        stream: _service.getTeachers(user),
         builder: (context, snapshot) {
           // 1. Ошибка
           if (snapshot.hasError) {
@@ -42,7 +61,9 @@ class TeachersScreen extends StatelessWidget {
 
           // 2. Загрузка
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           // 3. Данные
@@ -57,24 +78,6 @@ class TeachersScreen extends StatelessWidget {
               ),
             );
           }
-          /*Временно*/
-          ElevatedButton(
-            onPressed: () async {
-              final plan = LessonPlan(
-                id: const Uuid().v4(),
-                schoolId: 'SCHOOL_ID_1',
-                scheduleItemId: 'SCHEDULE_1',
-                date: '2026-02-04',
-                topic: 'Тестовый урок',
-                fileUrl: 'fake_url',
-                createdAt: DateTime.now(),
-              );
-
-              await LessonPlanService().create(plan);
-            },
-            child: const Text('CREATE LESSON PLAN'),
-          );
-          /*Временно*/
 
           // 5. Список
           return ListView.separated(
@@ -91,7 +94,7 @@ class TeachersScreen extends StatelessWidget {
                 subtitle: Text(teacher.login),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
-                  // позже: экран редактирования
+                  // позже: экран редактирования преподавателя
                 },
               );
             },

@@ -9,13 +9,16 @@ import 'screens/teachers/teachers_screen.dart';
 
 import 'services/lesson_plan_service.dart';
 
+import 'core/current_user.dart';
+import 'core/user_context.dart';
+import 'core/user_role.dart';
+
 Future<void> testGetLessonPlan() async {
   final result = await LessonPlanService().getByScheduleAndDate(
-    schoolId: 'school_001',          // ТВОЙ schoolId
-    scheduleItemId: 'SCHEDULE_1',    // ТВОЙ scheduleItemId
+    schoolId: 'school_001', // ТВОЙ schoolId
+    scheduleItemId: 'SCHEDULE_1', // ТВОЙ scheduleItemId
     date: '2026-02-04',
   );
-
 
   if (result == null) {
     print('LESSON PLAN NOT FOUND');
@@ -24,16 +27,17 @@ Future<void> testGetLessonPlan() async {
   }
 }
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  CurrentUser.user = UserContext(
+    userId: 'teacher-uuid-1',
+    schoolId: 'school-uuid-1',
+    role: UserRole.admin, // или admin
   );
-  await testGetLessonPlan(); // ← ВОТ ЭТО ВАЖНО
+  //await testGetLessonPlan(); // ← ВОТ ЭТО ВАЖНО
   runApp(const AdminApp());
 }
-
 
 class AdminApp extends StatelessWidget {
   const AdminApp({super.key});
@@ -43,10 +47,7 @@ class AdminApp extends StatelessWidget {
     return MaterialApp(
       title: 'School Admin',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.blueGrey,
-      ),
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blueGrey),
       home: TeachersScreen(),
     );
   }
