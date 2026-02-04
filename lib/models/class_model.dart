@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class SchoolClass {
   final String id;
   final String schoolId;
@@ -22,7 +24,7 @@ class SchoolClass {
       name: data['name'],
       language: data['language'],
       classTeacherId: data['classTeacherId'],
-      createdAt: DateTime.parse(data['createdAt']),
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
 

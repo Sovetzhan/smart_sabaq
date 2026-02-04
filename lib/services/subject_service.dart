@@ -36,8 +36,9 @@ class SubjectService {
       'schoolId': schoolId,
       'name': name,
       'normalizedName': normalizedName,
-      'createdAt': DateTime.now().toIso8601String(),
+      'createdAt': FieldValue.serverTimestamp(),
     });
+
   }
 
   Stream<List<Subject>> watchSubjects(String schoolId) {

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Subject {
   final String id;
   final String schoolId;
@@ -16,9 +18,10 @@ class Subject {
       id: id,
       schoolId: data['schoolId'],
       name: data['name'],
-      createdAt: DateTime.parse(data['createdAt']),
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
+
 
   Map<String, dynamic> toMap() {
     return {

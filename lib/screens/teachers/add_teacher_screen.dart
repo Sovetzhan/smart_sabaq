@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../app_config.dart';
 import '../../models/teacher.dart';
 import '../../services/teacher_service.dart';
+import '../../services/subject_service.dart';
+import '../subjects/subject_select_screen.dart';
 
 class AddTeacherScreen extends StatefulWidget {
   @override
@@ -10,15 +12,26 @@ class AddTeacherScreen extends StatefulWidget {
 
 class _AddTeacherScreenState extends State<AddTeacherScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _service = TeacherService();
+  final _teacherService = TeacherService();
+  final _subjectService = SubjectService();
 
   final _lastName = TextEditingController();
   final _firstName = TextEditingController();
   final _middleName = TextEditingController();
   final _login = TextEditingController();
 
+  /// Храним ТОЛЬКО id предметов
+  List<String> _selectedSubjectIds = [];
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedSubjectIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите хотя бы один предмет')),
+      );
+      return;
+    }
 
     final teacher = Teacher(
       id: '',
@@ -27,11 +40,27 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       firstName: _firstName.text.trim(),
       middleName: _middleName.text.trim(),
       login: _login.text.trim(),
-      subjectIds: [],
+      subjectIds: _selectedSubjectIds,
     );
 
-    await _service.addTeacher(teacher);
+    await _teacherService.addTeacher(teacher);
     Navigator.pop(context);
+  }
+
+  Future<void> _openSubjectSelector() async {
+    final result = await Navigator.push<List<String>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SubjectSelectScreen(
+          schoolId: schoolId,
+          selected: _selectedSubjectIds,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() => _selectedSubjectIds = result);
+    }
   }
 
   @override
@@ -60,15 +89,48 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
               ),
               TextFormField(
                 controller: _login,
-                decoration:
-                const InputDecoration(labelText: 'Email или телефон'),
+                decoration: const InputDecoration(
+                  labelText: 'Email или телефон',
+                ),
                 validator: (v) => v!.isEmpty ? 'Обязательно' : null,
               ),
+
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                child: const Text('Сохранить'),
+
+              InkWell(
+                onTap: _openSubjectSelector,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Предметы',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedSubjectIds.isEmpty
+                                  ? 'Не выбраны'
+                                  : 'Выбрано: ${_selectedSubjectIds.length}',
+                              style: TextStyle(
+                                color: _selectedSubjectIds.isEmpty
+                                    ? Colors.grey
+                                    : Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                ),
               ),
+              ElevatedButton(onPressed: _save, child: const Text('Сохранить')),
             ],
           ),
         ),
