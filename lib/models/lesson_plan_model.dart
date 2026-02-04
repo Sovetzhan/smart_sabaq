@@ -4,17 +4,18 @@ class LessonPlan {
   final String id;
   final String schoolId;
   final String scheduleItemId;
-  final String date; // YYYY-MM-DD
+  final DateTime lessonDate; // YYYY-MM-DD
   final String topic;
   final String fileUrl;
   final String? note;
-  final DateTime createdAt;
+  final DateTime? createdAt;
+
 
   LessonPlan({
     required this.id,
     required this.schoolId,
     required this.scheduleItemId,
-    required this.date,
+    required this.lessonDate,
     required this.topic,
     required this.fileUrl,
     this.note,
@@ -25,7 +26,7 @@ class LessonPlan {
     return {
       'schoolId': schoolId,
       'scheduleItemId': scheduleItemId,
-      'date': date,
+      'lessonDate': Timestamp.fromDate(lessonDate),
       'topic': topic,
       'fileUrl': fileUrl,
       'note': note,
@@ -39,11 +40,14 @@ class LessonPlan {
       id: id,
       schoolId: map['schoolId'],
       scheduleItemId: map['scheduleItemId'],
-      date: map['date'],
+      lessonDate: (map['lessonDate'] as Timestamp).toDate(),
       topic: map['topic'],
       fileUrl: map['fileUrl'],
       note: map['note'],
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
+      createdAt: map['createdAt'] != null
+          ? (map['createdAt'] as Timestamp).toDate()
+          : null,
+
     );
   }
 }

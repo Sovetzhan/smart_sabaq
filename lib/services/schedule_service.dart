@@ -10,16 +10,40 @@ class ScheduleService {
   // ===============================
   // CREATE — ТОЛЬКО АДМИН
   // ===============================
-  Future<void> create(
-      UserContext user,
-      ScheduleItem item,
-      ) async {
+  Future<void> create(UserContext user, ScheduleItem item) async {
     if (user.role != UserRole.admin) {
       throw Exception('Только администратор может создавать расписание');
     }
 
     if (item.schoolId != user.schoolId) {
       throw Exception('Неверная школа');
+    }
+
+    // Проверка: TimeSlot принадлежит школе
+    final timeSlotDoc = await _db
+        .collection('schools')
+        .doc(user.schoolId)
+        .collection('timeSlots')
+        .doc(item.timeSlotId)
+        .get();
+
+    if (!timeSlotDoc.exists) {
+      throw Exception('TimeSlot не принадлежит школе');
+    }
+
+    // Защита от дублей (class + day + timeslot)
+    final exists = await _db
+        .collection('schools')
+        .doc(user.schoolId)
+        .collection('scheduleItems')
+        .where('dayOfWeek', isEqualTo: item.dayOfWeek)
+        .where('classId', isEqualTo: item.classId)
+        .where('timeSlotId', isEqualTo: item.timeSlotId)
+        .limit(1)
+        .get();
+
+    if (exists.docs.isNotEmpty) {
+      throw Exception('Урок уже существует в этом таймслоте');
     }
 
     await _db
@@ -33,10 +57,7 @@ class ScheduleService {
   // ===============================
   // UPDATE — ТОЛЬКО АДМИН
   // ===============================
-  Future<void> update(
-      UserContext user,
-      ScheduleItem item,
-      ) async {
+  Future<void> update(UserContext user, ScheduleItem item) async {
     if (user.role != UserRole.admin) {
       throw Exception('Только администратор может редактировать расписание');
     }
@@ -56,10 +77,7 @@ class ScheduleService {
   // ===============================
   // DELETE — ТОЛЬКО АДМИН
   // ===============================
-  Future<void> delete(
-      UserContext user,
-      String scheduleItemId,
-      ) async {
+  Future<void> delete(UserContext user, String scheduleItemId) async {
     if (user.role != UserRole.admin) {
       throw Exception('Только администратор может удалять расписание');
     }
@@ -82,8 +100,7 @@ class ScheduleService {
     required String teacherId,
     required int dayOfWeek,
   }) async {
-    if (user.role == UserRole.teacher &&
-        user.userId != teacherId) {
+    if (user.role == UserRole.teacher && user.userId != teacherId) {
       throw Exception('Доступ запрещён');
     }
 
@@ -126,7 +143,7 @@ class ScheduleService {
   }
 
   // ===============================
-  // GET BY DAY (для админа)
+  // GET BY DAY — ТОЛЬКО АДМИН
   // ===============================
   Future<List<ScheduleItem>> getByDay({
     required UserContext user,

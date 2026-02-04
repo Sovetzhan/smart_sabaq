@@ -4,11 +4,12 @@ import '../models/lesson_plan_model.dart';
 class LessonPlanService {
   final _db = FirebaseFirestore.instance;
 
+  /// Создание плана урока
   Future<void> create(LessonPlan plan) async {
     final exists = await getByScheduleAndDate(
       schoolId: plan.schoolId,
       scheduleItemId: plan.scheduleItemId,
-      date: plan.date,
+      lessonDate: plan.lessonDate,
     );
 
     if (exists != null) {
@@ -23,17 +24,21 @@ class LessonPlanService {
         .set(plan.toMap());
   }
 
+  /// Получить план по уроку и дате
   Future<LessonPlan?> getByScheduleAndDate({
     required String schoolId,
     required String scheduleItemId,
-    required String date,
+    required DateTime lessonDate,
   }) async {
     final snap = await _db
         .collection('schools')
         .doc(schoolId)
         .collection('lessonPlans')
         .where('scheduleItemId', isEqualTo: scheduleItemId)
-        .where('date', isEqualTo: date)
+        .where(
+      'lessonDate',
+      isEqualTo: Timestamp.fromDate(_normalizeDate(lessonDate)),
+    )
         .limit(1)
         .get();
 
@@ -43,34 +48,49 @@ class LessonPlanService {
     return LessonPlan.fromMap(d.id, d.data());
   }
 
+  /// Получение планов для администратора по дате
   Future<List<LessonPlan>> getForAdmin({
     required String schoolId,
-    required String date,
+    required DateTime lessonDate,
   }) async {
     final snap = await _db
         .collection('schools')
         .doc(schoolId)
         .collection('lessonPlans')
-        .where('date', isEqualTo: date)
+        .where(
+      'lessonDate',
+      isEqualTo: Timestamp.fromDate(_normalizeDate(lessonDate)),
+    )
         .get();
 
-    return snap.docs.map((d) => LessonPlan.fromMap(d.id, d.data())).toList();
+    return snap.docs
+        .map((d) => LessonPlan.fromMap(d.id, d.data()))
+        .toList();
   }
 
+  /// Проверка наличия плана
   Future<bool> hasPlan({
     required String schoolId,
     required String scheduleItemId,
-    required String date,
+    required DateTime lessonDate,
   }) async {
     final snap = await _db
         .collection('schools')
         .doc(schoolId)
         .collection('lessonPlans')
         .where('scheduleItemId', isEqualTo: scheduleItemId)
-        .where('date', isEqualTo: date)
+        .where(
+      'lessonDate',
+      isEqualTo: Timestamp.fromDate(_normalizeDate(lessonDate)),
+    )
         .limit(1)
         .get();
 
     return snap.docs.isNotEmpty;
+  }
+
+  /// Нормализация даты (обрезаем время)
+  DateTime _normalizeDate(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
   }
 }
