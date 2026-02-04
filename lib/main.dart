@@ -7,6 +7,22 @@ import 'screens/teachers/teachers_screen.dart';
 // ⚠️ временно. потом будет из авторизации
 //const String schoolId = 'school_001';
 
+import 'services/lesson_plan_service.dart';
+
+Future<void> testGetLessonPlan() async {
+  final result = await LessonPlanService().getByScheduleAndDate(
+    schoolId: 'school_001',          // ТВОЙ schoolId
+    scheduleItemId: 'SCHEDULE_1',    // ТВОЙ scheduleItemId
+    date: '2026-02-04',
+  );
+
+
+  if (result == null) {
+    print('LESSON PLAN NOT FOUND');
+  } else {
+    print('LESSON PLAN FOUND: ${result.topic}');
+  }
+}
 
 
 void main() async {
@@ -14,6 +30,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await testGetLessonPlan(); // ← ВОТ ЭТО ВАЖНО
   runApp(const AdminApp());
 }
 

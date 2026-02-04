@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../models/lesson_plan_model.dart';
 import '../../models/teacher.dart';
+import '../../services/lesson_plan_service.dart';
 import '../../services/teacher_service.dart';
 import 'add_teacher_screen.dart';
 
@@ -12,20 +15,18 @@ class TeachersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Штат'),
-      ),
+      appBar: AppBar(title: const Text('Штат')),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => AddTeacherScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => AddTeacherScreen()),
           );
         },
         child: const Icon(Icons.add),
       ),
+
       body: StreamBuilder<List<Teacher>>(
         stream: _service.getTeachers(),
         builder: (context, snapshot) {
@@ -41,9 +42,7 @@ class TeachersScreen extends StatelessWidget {
 
           // 2. Загрузка
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           // 3. Данные
@@ -58,6 +57,24 @@ class TeachersScreen extends StatelessWidget {
               ),
             );
           }
+          /*Временно*/
+          ElevatedButton(
+            onPressed: () async {
+              final plan = LessonPlan(
+                id: const Uuid().v4(),
+                schoolId: 'SCHOOL_ID_1',
+                scheduleItemId: 'SCHEDULE_1',
+                date: '2026-02-04',
+                topic: 'Тестовый урок',
+                fileUrl: 'fake_url',
+                createdAt: DateTime.now(),
+              );
+
+              await LessonPlanService().create(plan);
+            },
+            child: const Text('CREATE LESSON PLAN'),
+          );
+          /*Временно*/
 
           // 5. Список
           return ListView.separated(
