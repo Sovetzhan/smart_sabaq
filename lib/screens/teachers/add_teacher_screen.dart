@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../app_config.dart';
 import '../../models/teacher.dart';
 import '../../services/teacher_service.dart';
 import '../../services/subject_service.dart';
@@ -36,7 +35,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
 
     final teacher = Teacher(
       id: '',
-      schoolId: schoolId,
+      schoolId: CurrentUser.require.schoolId,
       lastName: _lastName.text.trim(),
       firstName: _firstName.text.trim(),
       middleName: _middleName.text.trim(),
@@ -44,7 +43,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       subjectIds: _selectedSubjectIds,
     );
 
-    await _teacherService.addTeacher(CurrentUser.user!, teacher);
+    await _teacherService.addTeacher(CurrentUser.require!, teacher);
 
     Navigator.pop(context);
   }
@@ -54,7 +53,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => SubjectSelectScreen(
-          schoolId: schoolId,
+          schoolId: CurrentUser.require.schoolId,
           selected: _selectedSubjectIds,
         ),
       ),

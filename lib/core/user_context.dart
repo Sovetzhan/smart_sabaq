@@ -9,5 +9,6 @@ class UserContext {
     required this.userId,
     required this.schoolId,
     required this.role,
+
   });
 }

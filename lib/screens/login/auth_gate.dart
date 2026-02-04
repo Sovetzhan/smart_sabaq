@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../core/current_user.dart';
 import '../../core/user_context.dart';
@@ -21,22 +22,45 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-        if (snapshot.hasData) {
-          final firebaseUser = snapshot.data!;
-
-          // ⚠️ ВРЕМЕННО. ТОЛЬКО ЧТОБЫ ПРИЛОЖЕНИЕ ЖИЛО
-          CurrentUser.user = UserContext(
-            userId: firebaseUser.uid,
-            schoolId: 'school_001', // ← тот самый ID школы
-            role: UserRole.admin,   // ← пока жёстко
-          );
-
-          return TeachersScreen();
+        if (!snapshot.hasData) {
+          return  LoginScreen();
         }
 
+        final firebaseUser = snapshot.data!;
 
-        // НЕ ЗАЛОГИНЕН
-        return LoginScreen();
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .get(),
+          builder: (context, userSnapshot) {
+            if (userSnapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
+              return const Scaffold(
+                body: Center(child: Text('User document not found')),
+              );
+            }
+
+            final data = userSnapshot.data!.data() as Map<String, dynamic>;
+
+            final userContext = UserContext(
+              userId: firebaseUser.uid,
+              schoolId: data['schoolId'],
+              role: data['role'] == 'admin'
+                  ? UserRole.admin
+                  : UserRole.teacher,
+            );
+
+            CurrentUser.set(userContext);
+
+            return TeachersScreen();
+          },
+        );
       },
     );
   }

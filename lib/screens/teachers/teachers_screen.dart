@@ -15,7 +15,7 @@ class TeachersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final UserContext user = CurrentUser.user!;
+    final UserContext user = CurrentUser.require!;
 
     // ❌ Учитель не имеет права видеть штат
     if (user.role != UserRole.admin) {
