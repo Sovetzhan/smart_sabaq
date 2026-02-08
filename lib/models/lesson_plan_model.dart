@@ -10,8 +10,6 @@ class LessonPlan {
   final String? note;
   final DateTime? createdAt;
 
-
-
   LessonPlan({
     required this.id,
     required this.schoolId,
@@ -20,14 +18,19 @@ class LessonPlan {
     required this.topic,
     required this.fileUrl,
     this.note,
-    required this.createdAt,
+    this.createdAt,
   });
 
   Map<String, dynamic> toMap() {
+    assert(schoolId.isNotEmpty);
+    assert(scheduleItemId.isNotEmpty);
+
     return {
       'schoolId': schoolId,
       'scheduleItemId': scheduleItemId,
-      'lessonDate': Timestamp.fromDate(lessonDate),
+      'lessonDate': Timestamp.fromDate(
+        DateTime(lessonDate.year, lessonDate.month, lessonDate.day),
+      ),
       'topic': topic,
       'fileUrl': fileUrl,
       'note': note,
@@ -35,20 +38,18 @@ class LessonPlan {
     };
   }
 
-
   factory LessonPlan.fromMap(String id, Map<String, dynamic> map) {
     return LessonPlan(
       id: id,
-      schoolId: map['schoolId'],
-      scheduleItemId: map['scheduleItemId'],
+      schoolId: map['schoolId'] as String,
+      scheduleItemId: map['scheduleItemId'] as String,
       lessonDate: (map['lessonDate'] as Timestamp).toDate(),
-      topic: map['topic'],
-      fileUrl: map['fileUrl'],
-      note: map['note'],
+      topic: map['topic'] as String,
+      fileUrl: map['fileUrl'] as String,
+      note: map['note'] as String?,
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : null,
-
     );
   }
 }

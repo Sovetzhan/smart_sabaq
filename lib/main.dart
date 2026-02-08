@@ -11,16 +11,16 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const AdminApp());
+  runApp(const App());
 }
 
-class AdminApp extends StatelessWidget {
-  const AdminApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'School Admin',
+      title: 'School System',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

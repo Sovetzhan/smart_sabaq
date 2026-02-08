@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/current_user.dart';
+import '../../core/week_day.dart';
+
 import '../../models/schedule_item_model.dart';
 import '../../services/schedule_service.dart';
 
@@ -55,7 +57,7 @@ class _EditScheduleItemScreenState extends State<EditScheduleItemScreen> {
           schoolId: user.schoolId,
           classId: widget.classId,
           timeSlotId: widget.timeSlotId,
-          dayOfWeek: widget.dayOfWeek,
+          dayOfWeek: WeekDayX.fromInt(widget.dayOfWeek),
           subjectId: _subjectIdCtrl.text,
           teacherId: _teacherIdCtrl.text,
         ),

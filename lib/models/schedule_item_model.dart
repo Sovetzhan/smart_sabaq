@@ -1,7 +1,9 @@
+import '../core/week_day.dart';
+
 class ScheduleItem {
   final String id;
   final String schoolId;
-  final int dayOfWeek; // 1-7
+  final WeekDay dayOfWeek;
   final String classId;
   final String timeSlotId;
   final String subjectId;
@@ -15,12 +17,12 @@ class ScheduleItem {
     required this.timeSlotId,
     required this.subjectId,
     required this.teacherId,
-  });
+  }) : assert(schoolId.isNotEmpty);
 
   Map<String, dynamic> toMap() {
     return {
       'schoolId': schoolId,
-      'dayOfWeek': dayOfWeek,
+      'dayOfWeek': dayOfWeek.index,
       'classId': classId,
       'timeSlotId': timeSlotId,
       'subjectId': subjectId,
@@ -31,18 +33,19 @@ class ScheduleItem {
   factory ScheduleItem.fromMap(String id, Map<String, dynamic> map) {
     return ScheduleItem(
       id: id,
-      schoolId: map['schoolId'],
-      dayOfWeek: map['dayOfWeek'],
-      classId: map['classId'],
-      timeSlotId: map['timeSlotId'],
-      subjectId: map['subjectId'],
-      teacherId: map['teacherId'],
+      schoolId: map['schoolId'] as String,
+      dayOfWeek: WeekDayX.fromInt(map['dayOfWeek'] as int),
+      classId: map['classId'] as String,
+      timeSlotId: map['timeSlotId'] as String,
+      subjectId: map['subjectId'] as String,
+      teacherId: map['teacherId'] as String,
     );
   }
+
   ScheduleItem copyWith({
     String? id,
     String? schoolId,
-    int? dayOfWeek,
+    WeekDay? dayOfWeek,
     String? classId,
     String? timeSlotId,
     String? subjectId,
@@ -58,7 +61,4 @@ class ScheduleItem {
       teacherId: teacherId ?? this.teacherId,
     );
   }
-
-
 }
-
