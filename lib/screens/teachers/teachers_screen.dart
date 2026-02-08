@@ -6,6 +6,8 @@ import '../../core/user_role.dart';
 
 import '../../models/teacher.dart';
 import '../../services/teacher_service.dart';
+import '../classes/classes_screen.dart';
+import '../schedule/schedule_by_class_screen.dart';
 import 'add_teacher_screen.dart';
 
 class TeachersScreen extends StatelessWidget {
@@ -39,7 +41,7 @@ class TeachersScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => AddTeacherScreen(),
+              builder: (_) =>  ClassesScreen(),
             ),
           );
         },

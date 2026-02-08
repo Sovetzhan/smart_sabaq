@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 
 import '../core/user_context.dart';
 import '../core/user_role.dart';
@@ -6,6 +7,7 @@ import '../models/schedule_item_model.dart';
 
 class ScheduleService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final _uuid = const Uuid();
 
   // ===============================
   // CREATE — ТОЛЬКО АДМИН
@@ -46,12 +48,16 @@ class ScheduleService {
       throw Exception('Урок уже существует в этом таймслоте');
     }
 
+    final id = _uuid.v4();
+
     await _db
         .collection('schools')
         .doc(user.schoolId)
         .collection('scheduleItems')
-        .doc(item.id)
-        .set(item.toMap());
+        .doc(id)
+        .set(
+      item.copyWith(id: id).toMap(),
+    );
   }
 
   // ===============================
@@ -92,8 +98,6 @@ class ScheduleService {
 
   // ===============================
   // GET BY TEACHER
-  // admin — любого
-  // teacher — только себя
   // ===============================
   Future<List<ScheduleItem>> getByTeacher({
     required UserContext user,
@@ -134,29 +138,6 @@ class ScheduleService {
         .doc(user.schoolId)
         .collection('scheduleItems')
         .where('classId', isEqualTo: classId)
-        .where('dayOfWeek', isEqualTo: dayOfWeek)
-        .get();
-
-    return snap.docs
-        .map((d) => ScheduleItem.fromMap(d.id, d.data()))
-        .toList();
-  }
-
-  // ===============================
-  // GET BY DAY — ТОЛЬКО АДМИН
-  // ===============================
-  Future<List<ScheduleItem>> getByDay({
-    required UserContext user,
-    required int dayOfWeek,
-  }) async {
-    if (user.role != UserRole.admin) {
-      throw Exception('Только администратор');
-    }
-
-    final snap = await _db
-        .collection('schools')
-        .doc(user.schoolId)
-        .collection('scheduleItems')
         .where('dayOfWeek', isEqualTo: dayOfWeek)
         .get();
 

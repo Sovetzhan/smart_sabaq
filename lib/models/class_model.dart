@@ -6,7 +6,7 @@ class SchoolClass {
   final String name;
   final String language;
   final String? classTeacherId;
-  final DateTime createdAt;
+  final DateTime? createdAt;
 
   SchoolClass({
     required this.id,
@@ -14,7 +14,7 @@ class SchoolClass {
     required this.name,
     required this.language,
     this.classTeacherId,
-    required this.createdAt,
+    this.createdAt,
   });
 
   factory SchoolClass.fromMap(String id, Map<String, dynamic> data) {
@@ -24,17 +24,7 @@ class SchoolClass {
       name: data['name'],
       language: data['language'],
       classTeacherId: data['classTeacherId'],
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'schoolId': schoolId,
-      'name': name,
-      'language': language,
-      'classTeacherId': classTeacherId,
-      'createdAt': createdAt.toIso8601String(),
-    };
   }
 }

@@ -39,4 +39,26 @@ class ScheduleItem {
       teacherId: map['teacherId'],
     );
   }
+  ScheduleItem copyWith({
+    String? id,
+    String? schoolId,
+    int? dayOfWeek,
+    String? classId,
+    String? timeSlotId,
+    String? subjectId,
+    String? teacherId,
+  }) {
+    return ScheduleItem(
+      id: id ?? this.id,
+      schoolId: schoolId ?? this.schoolId,
+      dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+      classId: classId ?? this.classId,
+      timeSlotId: timeSlotId ?? this.timeSlotId,
+      subjectId: subjectId ?? this.subjectId,
+      teacherId: teacherId ?? this.teacherId,
+    );
+  }
+
+
 }
+

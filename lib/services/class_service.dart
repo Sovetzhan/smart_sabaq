@@ -24,7 +24,7 @@ class ClassService {
       'name': name,
       'language': language,
       'classTeacherId': classTeacherId,
-      'createdAt': DateTime.now().toIso8601String(),
+      'createdAt': FieldValue.serverTimestamp(),
     });
   }
 
@@ -35,7 +35,10 @@ class ClassService {
         .collection('classes')
         .orderBy('name')
         .snapshots()
-        .map((snapshot) =>
-        snapshot.docs.map((d) => SchoolClass.fromMap(d.id, d.data())).toList());
+        .map(
+          (snapshot) => snapshot.docs
+          .map((d) => SchoolClass.fromMap(d.id, d.data()))
+          .toList(),
+    );
   }
 }
