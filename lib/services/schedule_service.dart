@@ -33,8 +33,8 @@ class ScheduleService {
       throw Exception('TimeSlot не принадлежит школе');
     }
 
-    // Защита от дублей (class + day + timeslot)
-    final exists = await _db
+    // Проверка: класс занят в этом таймслоте
+    final classConflict = await _db
         .collection('schools')
         .doc(user.schoolId)
         .collection('scheduleItems')
@@ -44,8 +44,23 @@ class ScheduleService {
         .limit(1)
         .get();
 
-    if (exists.docs.isNotEmpty) {
-      throw Exception('Урок уже существует в этом таймслоте');
+    if (classConflict.docs.isNotEmpty) {
+      throw Exception('Класс уже занят в этом таймслоте');
+    }
+
+    // Проверка: учитель занят в этом таймслоте
+    final teacherConflict = await _db
+        .collection('schools')
+        .doc(user.schoolId)
+        .collection('scheduleItems')
+        .where('dayOfWeek', isEqualTo: item.dayOfWeek)
+        .where('teacherId', isEqualTo: item.teacherId)
+        .where('timeSlotId', isEqualTo: item.timeSlotId)
+        .limit(1)
+        .get();
+
+    if (teacherConflict.docs.isNotEmpty) {
+      throw Exception('Учитель уже ведёт урок в этом таймслоте');
     }
 
     final id = _uuid.v4();
@@ -59,6 +74,7 @@ class ScheduleService {
       item.copyWith(id: id).toMap(),
     );
   }
+
 
   // ===============================
   // UPDATE — ТОЛЬКО АДМИН

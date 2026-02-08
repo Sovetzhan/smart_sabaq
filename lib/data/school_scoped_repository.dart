@@ -1,61 +1,68 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import '../core/current_user.dart';
 
 class SchoolScopedRepository {
   final FirebaseFirestore _db;
+  final _uuid = const Uuid();
 
   SchoolScopedRepository({
     FirebaseFirestore? firestore,
   }) : _db = firestore ?? FirebaseFirestore.instance;
 
-  String get _schoolId => CurrentUser.require.schoolId;
+  String get schoolId => CurrentUser.require.schoolId;
 
-  /// Базовая коллекция (без фильтра)
-  CollectionReference<Map<String, dynamic>> collection(String name) {
+  CollectionReference<Map<String, dynamic>> _collection(String name) {
     return _db.collection(name);
   }
 
-  /// Коллекция с автоматической привязкой к schoolId
-  CollectionReference<Map<String, dynamic>> schoolCollection(String name) {
-    return _db.collection(name);
-  }
-
-  /// Query по школе
   Query<Map<String, dynamic>> schoolQuery(String collectionName) {
-    return schoolCollection(collectionName)
-        .where('schoolId', isEqualTo: _schoolId);
+    return _collection(collectionName)
+        .where('schoolId', isEqualTo: schoolId);
   }
 
-  DocumentReference<Map<String, dynamic>> doc(
+  /// UUID controlled create
+  Future<String> create(
       String collectionName,
-      String docId,
-      ) {
-    return schoolCollection(collectionName).doc(docId);
-  }
-
-  Future<void> create(
-      String collectionName,
-      String docId,
       Map<String, dynamic> data,
-      ) {
-    return doc(collectionName, docId).set({
+      ) async {
+    final id = _uuid.v4();
+
+    await _collection(collectionName).doc(id).set({
       ...data,
-      'schoolId': _schoolId,
+      'schoolId': schoolId,
+      'createdAt': FieldValue.serverTimestamp(),
     });
+
+    return id;
   }
 
   Future<void> update(
       String collectionName,
       String docId,
       Map<String, dynamic> data,
-      ) {
-    return doc(collectionName, docId).update(data);
+      ) async {
+    final ref = _collection(collectionName).doc(docId);
+    final snap = await ref.get();
+
+    if (!snap.exists || snap['schoolId'] != schoolId) {
+      throw Exception('Cross-school update blocked');
+    }
+
+    await ref.update(data);
   }
 
   Future<void> delete(
       String collectionName,
       String docId,
-      ) {
-    return doc(collectionName, docId).delete();
+      ) async {
+    final ref = _collection(collectionName).doc(docId);
+    final snap = await ref.get();
+
+    if (!snap.exists || snap['schoolId'] != schoolId) {
+      throw Exception('Cross-school delete blocked');
+    }
+
+    await ref.delete();
   }
 }

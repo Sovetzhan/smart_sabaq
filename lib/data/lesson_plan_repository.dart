@@ -8,8 +8,8 @@ class LessonPlanRepository {
 
   LessonPlanRepository(this._repo);
 
-  CollectionReference<Map<String, dynamic>> get _ref =>
-      _repo.schoolCollection(FirestoreCollections.lessonPlans);
+  Query<Map<String, dynamic>> get _query =>
+      _repo.schoolQuery(FirestoreCollections.lessonPlans);
 
   Future<void> create(LessonPlan plan) async {
     final dateOnly = Timestamp.fromDate(
@@ -20,7 +20,7 @@ class LessonPlanRepository {
       ),
     );
 
-    final snapshot = await _ref
+    final snapshot = await _query
         .where('scheduleItemId', isEqualTo: plan.scheduleItemId)
         .where('lessonDate', isEqualTo: dateOnly)
         .limit(1)
@@ -30,11 +30,14 @@ class LessonPlanRepository {
       throw Exception('Lesson plan already exists');
     }
 
-    await _ref.add(plan.toMap());
+    await _repo.create(
+      FirestoreCollections.lessonPlans,
+      plan.toMap(),
+    );
   }
 
   Query<Map<String, dynamic>> byScheduleItem(String scheduleItemId) {
-    return _ref.where('scheduleItemId', isEqualTo: scheduleItemId);
+    return _query.where('scheduleItemId', isEqualTo: scheduleItemId);
   }
 
   Query<Map<String, dynamic>> byDate(DateTime date) {
@@ -42,6 +45,6 @@ class LessonPlanRepository {
       DateTime(date.year, date.month, date.day),
     );
 
-    return _ref.where('lessonDate', isEqualTo: dateOnly);
+    return _query.where('lessonDate', isEqualTo: dateOnly);
   }
 }
