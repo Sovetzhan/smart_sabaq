@@ -11,16 +11,37 @@ class LessonPlanRepository {
   CollectionReference<Map<String, dynamic>> get _ref =>
       _repo.schoolCollection(FirestoreCollections.lessonPlans);
 
-  Future<void> create(LessonPlanModel plan) async {
-    final exists = await _ref
+  Future<void> create(LessonPlan plan) async {
+    final dateOnly = Timestamp.fromDate(
+      DateTime(
+        plan.lessonDate.year,
+        plan.lessonDate.month,
+        plan.lessonDate.day,
+      ),
+    );
+
+    final snapshot = await _ref
         .where('scheduleItemId', isEqualTo: plan.scheduleItemId)
-        .where('date', isEqualTo: plan.date.toIso8601String())
+        .where('lessonDate', isEqualTo: dateOnly)
+        .limit(1)
         .get();
 
-    if (exists.docs.isNotEmpty) {
+    if (snapshot.docs.isNotEmpty) {
       throw Exception('Lesson plan already exists');
     }
 
     await _ref.add(plan.toMap());
+  }
+
+  Query<Map<String, dynamic>> byScheduleItem(String scheduleItemId) {
+    return _ref.where('scheduleItemId', isEqualTo: scheduleItemId);
+  }
+
+  Query<Map<String, dynamic>> byDate(DateTime date) {
+    final dateOnly = Timestamp.fromDate(
+      DateTime(date.year, date.month, date.day),
+    );
+
+    return _ref.where('lessonDate', isEqualTo: dateOnly);
   }
 }

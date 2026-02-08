@@ -11,14 +11,16 @@ class ScheduleRepository {
   CollectionReference<Map<String, dynamic>> get _ref =>
       _repo.schoolCollection(FirestoreCollections.scheduleItems);
 
-  Future<void> create(ScheduleItemModel item) async {
+  Future<void> create(ScheduleItem item) async {
     final conflict = await _ref
         .where('dayOfWeek', isEqualTo: item.dayOfWeek)
         .where('timeSlotId', isEqualTo: item.timeSlotId)
-        .where(Filter.or(
-      Filter('teacherId', isEqualTo: item.teacherId),
-      Filter('classId', isEqualTo: item.classId),
-    ))
+        .where(
+      Filter.or(
+        Filter('teacherId', isEqualTo: item.teacherId),
+        Filter('classId', isEqualTo: item.classId),
+      ),
+    )
         .get();
 
     if (conflict.docs.isNotEmpty) {

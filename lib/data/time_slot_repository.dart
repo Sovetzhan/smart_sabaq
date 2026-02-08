@@ -11,23 +11,43 @@ class TimeSlotRepository {
   CollectionReference<Map<String, dynamic>> get _ref =>
       _repo.schoolCollection(FirestoreCollections.timeSlots);
 
-  Future<void> create(TimeSlotModel slot) async {
-    assert(slot.schoolId.isNotEmpty);
-    assert(slot.order >= 0);
-    assert(slot.startTime.isBefore(slot.endTime));
+  DateTime _parseTime(String time) {
+    // ожидается формат HH:mm
+    return DateTime.parse('1970-01-01 $time:00');
+  }
+
+  Future<void> create(TimeSlot slot) async {
+    if (slot.schoolId.isEmpty) {
+      throw Exception('schoolId is required');
+    }
+
+    if (slot.order < 0) {
+      throw Exception('order must be >= 0');
+    }
+
+    final start = _parseTime(slot.startTime);
+    final end = _parseTime(slot.endTime);
+
+    if (!start.isBefore(end)) {
+      throw Exception('startTime must be before endTime');
+    }
 
     final conflict = await _ref
+        .where('schoolId', isEqualTo: slot.schoolId)
         .where('order', isEqualTo: slot.order)
+        .limit(1)
         .get();
 
     if (conflict.docs.isNotEmpty) {
-      throw Exception('TimeSlot order already exists');
+      throw Exception('TimeSlot with this order already exists');
     }
 
     await _ref.add(slot.toMap());
   }
 
-  Query<Map<String, dynamic>> all() {
-    return _ref.orderBy('order');
+  Query<Map<String, dynamic>> all({required String schoolId}) {
+    return _ref
+        .where('schoolId', isEqualTo: schoolId)
+        .orderBy('order');
   }
 }

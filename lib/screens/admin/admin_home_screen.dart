@@ -1,20 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class AdminHomeScreen extends StatefulWidget {
+import 'plans/admin_plans_screen.dart';
+import '../classes/classes_screen.dart';
+import 'teachers/admin_teachers_screen.dart';
+import 'admin_schedule_screen.dart';
+
+class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
 
   @override
-  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final schoolId =
+        (snapshot.data!.data() as Map<String, dynamic>)['schoolId'];
+
+        return _AdminHomeContent(schoolId: schoolId);
+      },
+    );
+  }
 }
 
-class _AdminHomeScreenState extends State<AdminHomeScreen> {
+class _AdminHomeContent extends StatefulWidget {
+  final String schoolId;
+
+  const _AdminHomeContent({required this.schoolId});
+
+  @override
+  State<_AdminHomeContent> createState() => _AdminHomeContentState();
+}
+
+class _AdminHomeContentState extends State<_AdminHomeContent> {
   int index = 0;
 
-  final screens = const [
-    Center(child: Text('PLANS')),
-    Center(child: Text('CLASSES')),
-    Center(child: Text('TEACHERS')),
-    Center(child: Text('SCHEDULE')),
+  late final screens = [
+    AdminPlansScreen(schoolId: widget.schoolId),
+    ClassesScreen(schoolId: widget.schoolId),
+    AdminTeachersScreen(schoolId: widget.schoolId),
+    AdminScheduleScreen(schoolId: widget.schoolId),
   ];
 
   @override

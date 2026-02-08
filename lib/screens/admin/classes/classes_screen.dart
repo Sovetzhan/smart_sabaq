@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../services/class_service.dart';
-import '../../models/class_model.dart';
-import 'add_class_screen.dart';
+import '../../../core/current_user.dart';
+import '../../../models/class_model.dart';
+import '../../../services/class_service.dart';
+import '../../classes/add_class_screen.dart';
 
 class ClassesScreen extends StatelessWidget {
-  final String schoolId;
-
-  ClassesScreen({super.key, required this.schoolId});
+  ClassesScreen({super.key});
 
   final ClassService _classService = ClassService();
 
   @override
   Widget build(BuildContext context) {
+    final schoolId = CurrentUser.require.schoolId;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Классы'),
@@ -50,7 +51,9 @@ class ClassesScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => AddClassScreen(schoolId: schoolId),
+              builder: (_) => AddClassScreen(
+                schoolId: schoolId,
+              ),
             ),
           );
         },

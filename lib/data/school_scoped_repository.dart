@@ -10,12 +10,19 @@ class SchoolScopedRepository {
 
   String get _schoolId => CurrentUser.require.schoolId;
 
+  /// Базовая коллекция (без фильтра)
   CollectionReference<Map<String, dynamic>> collection(String name) {
     return _db.collection(name);
   }
 
+  /// Коллекция с автоматической привязкой к schoolId
+  CollectionReference<Map<String, dynamic>> schoolCollection(String name) {
+    return _db.collection(name);
+  }
+
+  /// Query по школе
   Query<Map<String, dynamic>> schoolQuery(String collectionName) {
-    return collection(collectionName)
+    return schoolCollection(collectionName)
         .where('schoolId', isEqualTo: _schoolId);
   }
 
@@ -23,7 +30,7 @@ class SchoolScopedRepository {
       String collectionName,
       String docId,
       ) {
-    return collection(collectionName).doc(docId);
+    return schoolCollection(collectionName).doc(docId);
   }
 
   Future<void> create(

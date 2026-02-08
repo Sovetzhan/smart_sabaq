@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../services/class_service.dart';
-import '../../core/current_user.dart';
-import 'classes_screen.dart';
 
 class AddClassScreen extends StatefulWidget {
-  const AddClassScreen({super.key});
+  final String schoolId;
+
+  const AddClassScreen({super.key, required this.schoolId});
 
   @override
   State<AddClassScreen> createState() => _AddClassScreenState();
@@ -72,11 +72,8 @@ class _AddClassScreenState extends State<AddClassScreen> {
 
     setState(() => _loading = true);
 
-    final schoolId = CurrentUser.require.schoolId;
-
-
     await _classService.createClass(
-      schoolId: schoolId,
+      schoolId: widget.schoolId,
       name: _nameController.text.trim(),
       language: _language,
     );
